@@ -45,7 +45,7 @@ class GameObject:
         self.body_color = body_color
 
     def draw(self):
-        '''Метод - заготовка для отрисовок объектов класса.'''
+        """Метод - заготовка для отрисовок объектов класса."""
         pass
 
 
@@ -82,6 +82,7 @@ class Snake(GameObject):
         self.last = None
 
     def get_head_position(self):
+        """Возвращает координаты головы змейки"""
         return self.positions[0]
 
     def move(self):
@@ -171,7 +172,7 @@ def handle_keys(game_object):
 
 
 def main():
-    # Инициализация PyGame:
+    """Инициализация PyGame."""
     pygame.init()
 
     # Тут нужно создать экземпляры классов.
