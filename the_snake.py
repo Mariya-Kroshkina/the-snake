@@ -124,7 +124,6 @@ class Snake(GameObject):
 
     def move(self):
         """Реализует движение змейки."""
-
         head_x, head_y = self.get_head_position()
 
         # Направление
