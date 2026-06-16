@@ -200,7 +200,7 @@ def main():
         snake.move()
 
         head_coordinates = snake.get_head_position()
-        if head_coordinates in snake.positions[1:]:
+        if head_coordinates in snake.positions[2:]:
             snake.reset()
             screen.fill(BOARD_BACKGROUND_COLOR)
         elif head_coordinates == apple.position:
