@@ -91,6 +91,7 @@ class GameObject:
             pg.draw.rect(screen, BORDER_COLOR, rect, 1)
 
     def clear_cell(self, position):
+        '''Удаляет ячейку в составе объекта'''
         rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
         pg.draw.rect(screen, BOARD_BACKGROUND_COLOR, rect)
 
