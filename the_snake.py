@@ -59,7 +59,7 @@ ALL_CELLS = set(
 screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
 pg.display.set_caption(
-    'Змейка. Чтобы выйти, закройте игровое окно или нажмите Esc'
+    'Змейка. Выход - Esc.'
 )
 
 clock = pg.time.Clock()
@@ -82,41 +82,41 @@ class GameObject:
             f'Метод класса {type(self).__name__} не отработал'
         )
 
-    def one_cell_draw(self, position, color=None, boarder=None):
+    def one_cell_draw(self, position, color=None):
         """Отрисовка одной ячейки в составе объекта"""
         rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
         cell_color = color or self.body_color
-        boarder = boarder or BOARD_BACKGROUND_COLOR
         pg.draw.rect(screen, cell_color, rect)
-        pg.draw.rect(screen, boarder, rect, 1)
+        if not cell_color == BOARD_BACKGROUND_COLOR:
+            pg.draw.rect(screen, BORDER_COLOR, rect, 1)
+
+    def clear_cell(self, position):
+        rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
+        pg.draw.rect(screen, BOARD_BACKGROUND_COLOR, rect)
 
 
 class Apple(GameObject):
     """Класс, описывающий яблоко."""
 
-    def randomize_position(self):
+    def randomize_position(self, taken_coordinates):
         """Возвращает координаты яблока."""
-        self.position = choice(tuple(ALL_CELLS - set(self.taken_coordinates)))
+        self.position = choice(tuple(ALL_CELLS - set(taken_coordinates)))
 
-    def __init__(self, taken_coordinates=SCREEN_CENTRE, body_color=APPLE_COLOR,
-                 boarder=BORDER_COLOR):
+    def __init__(self, taken_coordinates=None, body_color=APPLE_COLOR):
         super().__init__(body_color)
-        self.boarder = boarder
-        self.taken_coordinates = taken_coordinates
-        self.randomize_position()
+        self.randomize_position(taken_coordinates or [])
 
     def draw(self):
         """Отрисовывает яблоко"""
-        self.one_cell_draw(self.position, boarder=self.boarder)
+        self.one_cell_draw(self.position)
 
 
 class Snake(GameObject):
     """Класс, описывающий змейку."""
 
-    def __init__(self, body_color=SNAKE_COLOR, boarder=BORDER_COLOR):
+    def __init__(self, body_color=SNAKE_COLOR, direction=RIGHT):
         super().__init__(body_color)
-        self.boarder = boarder
-        self.reset()
+        self.reset(direction)
 
     def get_head_position(self):
         """Возвращает координаты головы змейки"""
@@ -135,13 +135,10 @@ class Snake(GameObject):
             (head_y // GRID_SIZE + dy) % GRID_HEIGHT * GRID_SIZE))
 
         self.last = (
-            self.positions[-1]
+            self.positions.pop()
             if len(self.positions) > self.length
             else None
         )
-
-        if len(self.positions) > self.length:
-            self.last = self.positions.pop()
 
     # Метод обновления направления после нажатия на кнопку
     def update_direction(self, new_direction):
@@ -151,20 +148,21 @@ class Snake(GameObject):
 
     def draw(self):
         """Отрисовывет змейку на экране."""
-        self.one_cell_draw(self.get_head_position(), boarder=self.boarder)
+        self.one_cell_draw(self.get_head_position())
 
         # Затирание последнего сегмента
         if self.last:
-            self.one_cell_draw(
-                self.last, BOARD_BACKGROUND_COLOR
-            )
+            self.clear_cell(self.last)
 
-    def reset(self):
+    def reset(self, direction=None):
         """Сбрасывает змейку до начального состояния."""
         self.length = 1
-        self.positions = [SCREEN_CENTRE]
-        self.direction = choice([UP, DOWN, LEFT, RIGHT])
         self.last = None
+        self.positions = [SCREEN_CENTRE]
+        if direction is not None:
+            self.direction = direction
+        else:
+            self.direction = choice([UP, DOWN, LEFT, RIGHT])
 
 
 # Функция обработки действий пользователя
@@ -180,9 +178,8 @@ def handle_keys(snake):
     Returns: None.
     """
     for event in pg.event.get():
-        if event.type == (pg.QUIT
-                          or (event.type == pg.KEYDOWN
-                              and event.key == pg.K_ESCAPE)):
+        if (event.type == pg.QUIT
+                or (event.type == pg.KEYDOWN and event.key == pg.K_ESCAPE)):
             pg.quit()
             raise SystemExit
         elif event.type == pg.KEYDOWN:
@@ -208,14 +205,14 @@ def main():
         handle_keys(snake)
         snake.move()
 
-        head_coordinates = snake.get_head_position()
-        if head_coordinates in snake.positions[4:]:
+        head = snake.get_head_position()
+        if head in snake.positions[4:]:
             snake.reset()
-            apple.randomize_position()
+            apple.randomize_position(snake.positions)
             screen.fill(BOARD_BACKGROUND_COLOR)
-        elif head_coordinates == apple.position:
+        elif head == apple.position:
             snake.length += 1
-            apple.randomize_position()
+            apple.randomize_position(snake.positions)
 
         snake.draw()
         apple.draw()
