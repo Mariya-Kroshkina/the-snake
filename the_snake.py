@@ -98,9 +98,9 @@ class Apple(GameObject):
         """Возвращает координаты яблока."""
         self.position = choice(tuple(ALL_CELLS - set(taken_coordinates)))
 
-    def __init__(self, taken_coordinates=[], body_color=APPLE_COLOR):
+    def __init__(self, taken_coordinates=None, body_color=APPLE_COLOR):
         super().__init__(body_color)
-        self.randomize_position(taken_coordinates)
+        self.randomize_position(taken_coordinates or [])
 
     def draw(self):
         """Отрисовывает яблоко"""
