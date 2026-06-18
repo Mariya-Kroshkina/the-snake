@@ -87,13 +87,8 @@ class GameObject:
         rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
         cell_color = color or self.body_color
         pg.draw.rect(screen, cell_color, rect)
-        if not cell_color == BOARD_BACKGROUND_COLOR:
+        if cell_color != BOARD_BACKGROUND_COLOR:
             pg.draw.rect(screen, BORDER_COLOR, rect, 1)
-
-    def clear_cell(self, position):
-        """Удаляет ячейку в составе объекта"""
-        rect = pg.Rect(position, (GRID_SIZE, GRID_SIZE))
-        pg.draw.rect(screen, BOARD_BACKGROUND_COLOR, rect)
 
 
 class Apple(GameObject):
@@ -103,9 +98,9 @@ class Apple(GameObject):
         """Возвращает координаты яблока."""
         self.position = choice(tuple(ALL_CELLS - set(taken_coordinates)))
 
-    def __init__(self, taken_coordinates=None, body_color=APPLE_COLOR):
+    def __init__(self, taken_coordinates=[], body_color=APPLE_COLOR):
         super().__init__(body_color)
-        self.randomize_position(taken_coordinates or [])
+        self.randomize_position(taken_coordinates)
 
     def draw(self):
         """Отрисовывает яблоко"""
@@ -115,9 +110,9 @@ class Apple(GameObject):
 class Snake(GameObject):
     """Класс, описывающий змейку."""
 
-    def __init__(self, body_color=SNAKE_COLOR, direction=RIGHT):
+    def __init__(self, body_color=SNAKE_COLOR):
         super().__init__(body_color)
-        self.reset(direction)
+        self.reset(RIGHT)
 
     def get_head_position(self):
         """Возвращает координаты головы змейки"""
@@ -153,17 +148,14 @@ class Snake(GameObject):
 
         # Затирание последнего сегмента
         if self.last:
-            self.clear_cell(self.last)
+            self.one_cell_draw(self.last, BOARD_BACKGROUND_COLOR)
 
     def reset(self, direction=None):
         """Сбрасывает змейку до начального состояния."""
         self.length = 1
         self.last = None
         self.positions = [SCREEN_CENTRE]
-        if direction is not None:
-            self.direction = direction
-        else:
-            self.direction = choice([UP, DOWN, LEFT, RIGHT])
+        self.direction = direction or choice([UP, DOWN, LEFT, RIGHT])
 
 
 # Функция обработки действий пользователя
